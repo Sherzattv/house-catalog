@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Каталог проектов — Black Project Sip</title>
+<style>
+:root{
+  --bg:#0e1014; --bg-soft:#14171e; --card:#171a21; --card-hi:#1d212b;
+  --line:#262b35; --line-hi:#333a47;
+  --txt:#e9ebf1; --mut:#8b92a3; --mut2:#5f6675;
+  --acc:#e0b15a; --acc-soft:rgba(224,177,90,.14); --acc-line:rgba(224,177,90,.55);
+  --shadow:0 14px 34px -14px rgba(0,0,0,.7);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.5 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+img{display:block}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--acc-soft)}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.head-top{display:flex;align-items:center;gap:14px;padding:15px 24px 0}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{margin:0;font-size:18px;font-weight:650;letter-spacing:.2px;white-space:nowrap}
+.brand .dot{color:var(--acc)}
+.brand .sub{color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats{margin-left:auto;display:flex;gap:18px;color:var(--mut);font-size:13px;white-space:nowrap}
+.stats b{color:var(--txt);font-weight:600}
+.stats .s-num{color:var(--acc)}
+
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:13px 24px 15px}
+.search{position:relative;flex:1 1 230px;max-width:340px}
+.search>svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none}
+.search input{width:100%;padding:10px 34px 10px 36px;border-radius:11px;border:1px solid var(--line);background:var(--bg-soft);color:var(--txt);outline:none;transition:border-color .15s,box-shadow .15s}
+.search input::placeholder{color:var(--mut2)}
+.search input:focus{border-color:var(--acc-line);box-shadow:0 0 0 3px var(--acc-soft)}
+.search .clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);color:var(--mut);padding:5px;border-radius:8px;display:none;line-height:0}
+.search .clear:hover{color:var(--txt);background:var(--line)}
+
+.seg{display:inline-flex;background:var(--bg-soft);border:1px solid var(--line);border-radius:11px;padding:3px}
+.seg button{padding:7px 12px;border-radius:8px;color:var(--mut);font-size:13px;font-weight:550;white-space:nowrap;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+.seg button:hover{color:var(--txt)}
+.seg button.on{background:var(--card-hi);color:var(--txt);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 1px 2px rgba(0,0,0,.35)}
+.seg.segfav button.on{color:var(--acc)}
+.seg svg{width:14px;height:14px}
+
+.spacer{flex:1 1 auto}
+.count{color:var(--mut);font-size:13px;white-space:nowrap}
+
+/* filters wrapper transparent on desktop; collapse toggle is mobile-only */
+.filters{display:contents}
+.filt-bar{display:contents}
+.filt-toggle{display:none;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;border:1px solid var(--line);background:var(--bg-soft);color:var(--txt);font-size:14px;font-weight:550}
+.filt-toggle>svg{width:16px;height:16px;color:var(--mut)}
+.filt-toggle .chev{margin-left:auto;color:var(--mut);transition:transform .2s ease}
+.controls.filters-open .filt-toggle{border-color:var(--line-hi)}
+.controls.filters-open .filt-toggle .chev{transform:rotate(180deg)}
+.filt-badge{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--acc);color:#1a1205;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.filt-badge[hidden]{display:none}
+
+/* ---------- grid ---------- */
+.wrap{padding:22px 24px 64px;max-width:1640px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:18px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;animation:pop .32s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.card:hover{transform:translateY(-4px);border-color:var(--line-hi);box-shadow:var(--shadow)}
+.media{position:relative;height:200px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.media img{width:100%;height:100%;object-fit:contain;transition:transform .4s ease}
+.card:hover .media img{transform:scale(1.045)}
+.open-hint{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;opacity:0;transition:.18s;background:linear-gradient(to top,rgba(0,0,0,.4),rgba(0,0,0,0) 42%)}
+.card:hover .open-hint{opacity:1}
+.open-hint span{background:rgba(20,23,30,.88);color:#fff;border:1px solid rgba(255,255,255,.15);padding:7px 13px;border-radius:9px;font-size:12.5px;font-weight:550;display:flex;align-items:center;gap:6px;transform:translateY(8px);transition:.18s}
+.card:hover .open-hint span{transform:none}
+
+.badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;max-width:72%}
+.badge{font-size:11px;font-weight:600;padding:4px 8px;border-radius:7px;background:rgba(16,18,24,.82);color:#fff;border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(4px);display:flex;align-items:center;gap:4px;line-height:1}
+.badge.story{background:rgba(224,177,90,.94);color:#1a1205;border-color:transparent}
+
+.fav{position:absolute;top:9px;right:9px;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(16,18,24,.72);border:1px solid rgba(255,255,255,.13);color:#cfd3dd;backdrop-filter:blur(4px);transition:.15s;z-index:2}
+.fav:hover{color:#fff;background:rgba(16,18,24,.94);transform:scale(1.06)}
+.fav.on{color:var(--acc)}
+.fav svg{width:18px;height:18px}
+
+.body{padding:12px 14px 13px}
+.body .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-size:14.5px;font-weight:600}
+.title .num{color:var(--acc)}
+.pages{font-size:12px;color:var(--mut)}
+.tags{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.tag{font-size:11.5px;color:var(--mut);background:var(--bg-soft);border:1px solid var(--line);padding:3px 8px;border-radius:7px;display:flex;align-items:center;gap:5px}
+.tag svg{opacity:.8}
+
+/* ---------- empty ---------- */
+.empty{text-align:center;padding:84px 20px;color:var(--mut)}
+.empty .big{font-size:40px;margin-bottom:10px;opacity:.5}
+.empty button{margin-top:16px;color:var(--acc);border:1px solid var(--acc-line);padding:8px 16px;border-radius:10px}
+.empty button:hover{background:var(--acc-soft)}
+
+/* ---------- lightbox ---------- */
+.lb{position:fixed;inset:0;z-index:60;background:rgba(8,9,12,.95);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);display:none;flex-direction:column;animation:fade .2s ease}
+.lb.show{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.lb-top{display:flex;align-items:center;gap:12px;padding:13px 16px}
+.lb-cap{display:flex;align-items:center;gap:10px;min-width:0}
+.lb-cap .t{font-weight:600;font-size:15px;white-space:nowrap}
+.lb-cap .t .num{color:var(--acc)}
+.lb-cap .meta{color:var(--mut);font-size:13px;white-space:nowrap}
+.lb-type{font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;border:1px solid var(--line-hi);color:var(--mut)}
+.lb-type.facade{color:#9ad0ff;border-color:rgba(154,208,255,.4)}
+.lb-type.plan{color:#ffcf8f;border-color:rgba(255,207,143,.4)}
+.lb-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.lb-btn{padding:8px 12px;border-radius:10px;border:1px solid var(--line);color:var(--mut);font-size:13px;display:flex;align-items:center;gap:7px;transition:.15s}
+.lb-btn:hover{color:var(--txt);background:rgba(255,255,255,.05);border-color:var(--line-hi)}
+.lb-btn svg{width:16px;height:16px}
+.lb-btn.on{color:var(--acc);border-color:var(--acc-line)}
+.lb-close{width:40px;height:40px;justify-content:center;padding:0}
+
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}
+.lb-stage img{max-width:92%;max-height:100%;object-fit:contain;cursor:zoom-in;transition:transform .2s ease;user-select:none;-webkit-user-drag:none;border-radius:4px}
+.lb-stage img.zoom{cursor:zoom-out;transition:none}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;background:rgba(20,23,30,.72);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;transition:.15s;z-index:3}
+.lb-nav:hover:not(:disabled){background:rgba(32,36,46,.96);transform:translateY(-50%) scale(1.07)}
+.lb-nav.prev{left:18px}
+.lb-nav.next{right:18px}
+.lb-nav:disabled{opacity:.22;cursor:default}
+.lb-nav svg{width:26px;height:26px}
+
+.lb-strip{display:flex;gap:8px;padding:12px 18px 18px;overflow-x:auto;justify-content:safe center}
+.lb-strip::-webkit-scrollbar{height:8px}
+.lb-strip::-webkit-scrollbar-thumb{background:var(--line-hi);border-radius:4px}
+.lb-thumb{flex:0 0 auto;width:96px;height:66px;border-radius:9px;overflow:hidden;background:#fff;border:2px solid transparent;opacity:.5;transition:.15s;position:relative;cursor:pointer}
+.lb-thumb img{width:100%;height:100%;object-fit:contain}
+.lb-thumb:hover{opacity:.85}
+.lb-thumb.on{opacity:1;border-color:var(--acc)}
+.lb-thumb .lab{position:absolute;left:0;right:0;bottom:0;font-size:9px;font-weight:600;text-align:center;color:#333;background:rgba(255,255,255,.82);padding:1px 0;letter-spacing:.3px}
+
+@media(max-width:640px){
+  .head-top{flex-wrap:wrap}
+  .stats{display:none}
+  .controls{padding:12px 16px 14px;flex-direction:column;align-items:stretch;gap:10px}
+  .search{order:1;flex:none;width:100%;max-width:none}
+  .filt-bar{display:flex;order:2;align-items:center;justify-content:space-between;gap:12px}
+  .filt-toggle{display:flex;flex:1 1 auto}
+  .count{order:0}
+  .spacer{display:none}
+  .filters{order:3;display:none;flex-direction:column;gap:8px;width:100%}
+  .controls.filters-open .filters{display:flex}
+  .filters .seg{width:100%}
+  .filters .seg button{flex:1;justify-content:center}
+  .wrap{padding:18px 16px 60px}
+  .media{height:172px}
+  .lb-top{padding:11px 12px}
+  .lb-nav{width:44px;height:44px}
+  .lb-cap .meta{display:none}
+  .lb-btn .lbl{display:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-top">
+    <div class="brand">
+      <h1>Black Project Sip<span class="dot">.</span></h1>
+      <span class="sub">каталог проектов домов</span>
+    </div>
+    <div class="stats">
+      <span><b class="s-num" id="st-proj">63</b> проекта</span>
+      <span><b id="st-fac">71</b> фасад</span>
+      <span><b id="st-plan">82</b> планировки</span>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Поиск: № проекта или страницы…" autocomplete="off" spellcheck="false">
+      <button class="clear" id="qclear" aria-label="Очистить поиск"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="filters" id="filters">
+      <div class="seg" id="f-story" role="group" aria-label="Этажность">
+        <button data-f="all" class="on">Все</button>
+        <button data-f="1">1 этаж</button>
+        <button data-f="2">2 этажа</button>
+      </div>
+      <div class="seg" id="f-size" role="group" aria-label="Площадь застройки">
+        <button data-s="all" class="on">Любая</button>
+        <button data-s="s">до 100&nbsp;м²</button>
+        <button data-s="m">100–150</button>
+        <button data-s="l">150+&nbsp;м²</button>
+      </div>
+      <div class="seg" id="f-view" role="group" aria-label="Что показывать на карточке">
+        <button data-v="facade" class="on">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Фасад</button>
+        <button data-v="plan">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 9v12M9 14h6"/></svg>План</button>
+      </div>
+      <div class="seg segfav" id="f-fav">
+        <button data-f="fav">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>Избранное <span id="fav-n"></span></button>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="filt-bar">
+      <button class="filt-toggle" id="filt-toggle" type="button" aria-expanded="false" aria-controls="filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+        <span>Фильтры</span>
+        <span class="filt-badge" id="filt-badge" hidden></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="count" id="count"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">
+    <div class="big">🔍</div>
+    <div id="empty-msg">Ничего не найдено</div>
+    <button id="reset">Сбросить фильтры</button>
+  </div>
+</div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Просмотр проекта">
+  <div class="lb-top">
+    <div class="lb-cap">
+      <span class="t">Проект&nbsp;<span class="num" id="lb-num"></span></span>
+      <span class="meta" id="lb-meta"></span>
+      <span class="lb-type" id="lb-type"></span>
+    </div>
+    <div class="lb-actions">
+      <button class="lb-btn" id="lb-fav" aria-label="В избранное">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><span class="lbl">В избранное</span></button>
+      <a class="lb-btn" id="lb-orig" target="_blank" rel="noopener" aria-label="Открыть оригинал">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg><span class="lbl">Оригинал</span></a>
+      <button class="lb-btn lb-close" id="lb-close" aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+  </div>
+  <div class="lb-stage" id="lb-stage">
+    <button class="lb-nav prev" id="lb-prev" aria-label="Назад">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <img id="lb-img" alt="">
+    <button class="lb-nav next" id="lb-next" aria-label="Вперёд">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="lb-strip" id="lb-strip"></div>
+</div>
+
+<script src="catalog.data.js?v=2"></script>
+<script>
+const DATA = (window.CATALOG || []);
+
+/* ---- helpers ---- */
+const pad   = n => String(n).padStart(3,'0');
+const thumb = pg => `02_pages/thumbs/p${pad(pg)}.png`;
+const full  = (pg,t) => `02_pages/p${pad(pg)}_${t}.png`;
+const storeys = p => p.p.length >= 2 ? 2 : 1;
+const imgsOf  = p => [...p.f.map(pg=>({pg,type:'facade'})), ...p.p.map(pg=>({pg,type:'plan'}))];
+const byId = id => DATA.find(p=>p.id===id);
+function pl(n,a,b,c){const x=n%10,y=n%100;if(x===1&&y!==11)return a;if(x>=2&&x<=4&&(y<10||y>=20))return b;return c;}
+const dimsOf = p => (p.w!=null && p.d!=null) ? `${p.w} × ${p.d} м` : '';
+function sizeBucket(p){ const a=p.a; if(a==null) return null; if(a<100) return 's'; if(a<150) return 'm'; return 'l'; }
+
+const ICON = {
+  home:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+  plan:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 9v12M9 14h6"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  area:'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6"/></svg>'
+};
+
+/* ---- state ---- */
+let view='facade', storyFilter='all', sizeFilter='all', favOnly=false, query='';
+const favs = new Set(JSON.parse(localStorage.getItem('bps_favs')||'[]'));
+const saveFavs = () => localStorage.setItem('bps_favs', JSON.stringify([...favs]));
+
+const $ = id => document.getElementById(id);
+const grid=$('grid'), elEmpty=$('empty'), elCount=$('count');
+
+/* ---- filtering ---- */
+function matchQuery(p,q){
+  if(!q) return true;
+  q=q.trim().toLowerCase(); if(!q) return true;
+  if(('проект '+p.label+' '+p.pages).toLowerCase().includes(q)) return true;
+  const n=parseInt(q,10);
+  if(!isNaN(n)){
+    if(parseInt(p.label,10)===n) return true;
+    const [a,b]=p.pages.split('-').map(Number);
+    if(n>=a && n<=(isNaN(b)?a:b)) return true;
+  }
+  return false;
+}
+function filtered(){
+  return DATA.filter(p=>{
+    if(favOnly && !favs.has(p.id)) return false;
+    if(storyFilter!=='all' && String(storeys(p))!==storyFilter) return false;
+    if(sizeFilter!=='all' && sizeBucket(p)!==sizeFilter) return false;
+    if(!matchQuery(p,query)) return false;
+    return true;
+  });
+}
+function heroOf(p){
+  if(view==='plan'   && p.p.length) return {pg:p.p[0],type:'plan'};
+  if(view==='facade' && p.f.length) return {pg:p.f[0],type:'facade'};
+  return imgsOf(p)[0];
+}
+
+/* ---- render grid ---- */
+function render(){
+  const list=filtered();
+  grid.innerHTML='';
+  if(!list.length){grid.style.display='none';elEmpty.style.display='block';}
+  else{
+    grid.style.display='grid';elEmpty.style.display='none';
+    const frag=document.createDocumentFragment();
+    list.forEach((p,i)=>frag.appendChild(card(p,i)));
+    grid.appendChild(frag);
+  }
+  elCount.textContent = list.length===DATA.length
+    ? `${DATA.length} проектов`
+    : `Показано ${list.length} из ${DATA.length}`;
+  updateFiltBadge();
+}
+function card(p,idx){
+  const hero=heroOf(p), st=storeys(p), nF=p.f.length, nP=p.p.length;
+  const el=document.createElement('article');
+  el.className='card';
+  el.style.animationDelay=Math.min(idx,14)*16+'ms';
+  el.innerHTML=`
+    <div class="media">
+      <img loading="lazy" src="${thumb(hero.pg)}" alt="Проект ${p.label}">
+      <div class="badges">
+        <span class="badge story">${st===2?'2 этажа':'1 этаж'}</span>
+        ${nF>1?`<span class="badge">${nF} вида</span>`:''}
+      </div>
+      <button class="fav ${favs.has(p.id)?'on':''}" data-id="${p.id}" aria-label="В избранное">${ICON.heart}</button>
+      <div class="open-hint"><span>${ICON.eye} Открыть</span></div>
+    </div>
+    <div class="body">
+      <div class="row">
+        <span class="title">Проект <span class="num">${p.label}</span></span>
+        <span class="pages">${p.a!=null?p.a+' м²':'стр. '+p.pages}</span>
+      </div>
+      <div class="tags">
+        ${dimsOf(p)?`<span class="tag">${ICON.area} ${dimsOf(p)}</span>`:''}
+        <span class="tag">${ICON.home} ${nF} ${pl(nF,'фасад','фасада','фасадов')}</span>
+        <span class="tag">${ICON.plan} ${nP} ${pl(nP,'план','плана','планов')}</span>
+      </div>
+    </div>`;
+  el.addEventListener('click',e=>{
+    if(e.target.closest('.fav')) return;
+    const all=imgsOf(p);
+    const start=all.findIndex(x=>x.pg===hero.pg && x.type===hero.type);
+    openLB(p.id, start<0?0:start);
+  });
+  el.querySelector('.fav').addEventListener('click',e=>{e.stopPropagation();toggleFav(p.id);});
+  return el;
+}
+
+/* ---- favorites ---- */
+function toggleFav(id){
+  favs.has(id)?favs.delete(id):favs.add(id);
+  saveFavs(); syncFav(id); updateFavCount();
+  if(favOnly) render();
+}
+function syncFav(id){
+  document.querySelectorAll(`.fav[data-id="${id}"]`).forEach(b=>b.classList.toggle('on',favs.has(id)));
+  if(lbProj && lbProj.id===id) $('lb-fav').classList.toggle('on',favs.has(id));
+}
+function updateFavCount(){ $('fav-n').textContent = favs.size? favs.size : ''; }
+function updateFiltBadge(){
+  const n = (storyFilter!=='all') + (sizeFilter!=='all') + (favOnly?1:0);
+  const b = $('filt-badge');
+  if(n){ b.textContent = n; b.hidden = false; } else { b.hidden = true; b.textContent = ''; }
+}
+
+/* ---- lightbox ---- */
+let lbProj=null, lbIdx=0, lbList=[], zoomed=false;
+const lb=$('lb'), lbImg=$('lb-img');
+
+function openLB(id,idx){
+  lbProj=byId(id); lbList=imgsOf(lbProj); lbIdx=idx;
+  buildStrip(); showLB();
+  lb.classList.add('show'); document.body.style.overflow='hidden';
+}
+function showLB(){
+  zoomed=false; lbImg.classList.remove('zoom'); lbImg.style.transform='';
+  const it=lbList[lbIdx];
+  lbImg.src=full(it.pg,it.type);
+  $('lb-num').textContent=lbProj.label;
+  const meta=[];
+  if(lbProj.a!=null) meta.push(lbProj.a+' м²');
+  if(dimsOf(lbProj)) meta.push(dimsOf(lbProj));
+  meta.push('стр. '+it.pg, `${lbIdx+1}/${lbList.length}`);
+  $('lb-meta').textContent=meta.join(' · ');
+  const ty=$('lb-type'); ty.textContent=it.type==='facade'?'Фасад':'Планировка'; ty.className='lb-type '+it.type;
+  $('lb-orig').href=full(it.pg,it.type);
+  $('lb-fav').classList.toggle('on',favs.has(lbProj.id));
+  [...$('lb-strip').children].forEach((c,i)=>c.classList.toggle('on',i===lbIdx));
+  const list=filtered(), pos=list.findIndex(p=>p.id===lbProj.id);
+  $('lb-prev').disabled = pos<=0 && lbIdx===0;
+  $('lb-next').disabled = pos===list.length-1 && lbIdx===lbList.length-1;
+  const act=$('lb-strip').children[lbIdx];
+  if(act) act.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+}
+function buildStrip(){
+  const s=$('lb-strip'); s.innerHTML='';
+  lbList.forEach((it,i)=>{
+    const b=document.createElement('button');
+    b.className='lb-thumb'+(i===lbIdx?' on':'');
+    b.innerHTML=`<img src="${thumb(it.pg)}" alt=""><span class="lab">${it.type==='facade'?'фасад':'план'}</span>`;
+    b.addEventListener('click',()=>{lbIdx=i;showLB();});
+    s.appendChild(b);
+  });
+}
+function lbNext(){
+  if(lbIdx<lbList.length-1){lbIdx++;showLB();return;}
+  const list=filtered(), pos=list.findIndex(p=>p.id===lbProj.id);
+  if(pos>=0 && pos<list.length-1) openLB(list[pos+1].id,0);
+}
+function lbPrev(){
+  if(lbIdx>0){lbIdx--;showLB();return;}
+  const list=filtered(), pos=list.findIndex(p=>p.id===lbProj.id);
+  if(pos>0){const pr=list[pos-1]; openLB(pr.id, imgsOf(pr).length-1);}
+}
+function closeLB(){lb.classList.remove('show');document.body.style.overflow='';lbImg.src='';lbProj=null;}
+
+/* zoom + pan — works with both mouse and touch */
+const ZOOM=2.3;
+function lbSetOrigin(clientX,clientY){
+  const r=lbImg.getBoundingClientRect();
+  const x=Math.min(100,Math.max(0,(clientX-r.left)/r.width*100));
+  const y=Math.min(100,Math.max(0,(clientY-r.top)/r.height*100));
+  lbImg.style.transformOrigin=`${x}% ${y}%`;
+}
+function lbZoom(on,clientX,clientY){
+  zoomed=on; lbImg.classList.toggle('zoom',on);
+  if(on){ if(clientX!=null) lbSetOrigin(clientX,clientY); lbImg.style.transform='scale('+ZOOM+')'; }
+  else lbImg.style.transform='';
+}
+lbImg.addEventListener('click',e=>lbZoom(!zoomed,e.clientX,e.clientY));
+$('lb-stage').addEventListener('mousemove',e=>{ if(zoomed) lbSetOrigin(e.clientX,e.clientY); });
+$('lb-stage').addEventListener('touchmove',e=>{
+  if(!zoomed) return;
+  e.preventDefault();
+  const t=e.touches[0];
+  lbSetOrigin(t.clientX,t.clientY);
+},{passive:false});
+
+/* ---- wire controls ---- */
+$('q').addEventListener('input',e=>{
+  query=e.target.value;
+  $('qclear').style.display=query?'block':'none';
+  render();
+});
+$('qclear').addEventListener('click',()=>{query='';const i=$('q');i.value='';i.focus();$('qclear').style.display='none';render();});
+$('f-story').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;storyFilter=b.dataset.f;segOn('f-story',b);render();});
+$('f-size').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;sizeFilter=b.dataset.s;segOn('f-size',b);render();});
+$('f-view').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;view=b.dataset.v;segOn('f-view',b);render();});
+$('f-fav').addEventListener('click',()=>{favOnly=!favOnly;$('f-fav').querySelector('button').classList.toggle('on',favOnly);render();});
+$('filt-toggle').addEventListener('click',()=>{
+  const c=document.querySelector('.controls');
+  const open=c.classList.toggle('filters-open');
+  $('filt-toggle').setAttribute('aria-expanded',open);
+});
+$('reset').addEventListener('click',()=>{
+  query='';$('q').value='';$('qclear').style.display='none';
+  storyFilter='all';sizeFilter='all';favOnly=false;
+  document.querySelectorAll('#f-story button').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.querySelectorAll('#f-size button').forEach((b,i)=>b.classList.toggle('on',i===0));
+  $('f-fav').querySelector('button').classList.remove('on');
+  render();
+});
+function segOn(group,btn){document.querySelectorAll('#'+group+' button').forEach(b=>b.classList.toggle('on',b===btn));}
+
+$('lb-prev').addEventListener('click',lbPrev);
+$('lb-next').addEventListener('click',lbNext);
+$('lb-close').addEventListener('click',closeLB);
+$('lb-fav').addEventListener('click',()=>toggleFav(lbProj.id));
+lb.addEventListener('click',e=>{if(e.target===lb||e.target.id==='lb-stage')closeLB();});
+
+document.addEventListener('keydown',e=>{
+  if(lb.classList.contains('show')){
+    if(e.key==='Escape')closeLB();
+    else if(e.key==='ArrowRight')lbNext();
+    else if(e.key==='ArrowLeft')lbPrev();
+  }else if(e.key==='/' && document.activeElement.id!=='q'){
+    e.preventDefault();$('q').focus();
+  }
+});
+
+/* ---- init ---- */
+$('st-proj').textContent=DATA.length;
+$('st-fac').textContent=DATA.reduce((s,p)=>s+p.f.length,0);
+$('st-plan').textContent=DATA.reduce((s,p)=>s+p.p.length,0);
+updateFavCount();
+render();
+</script>
+</body>
+</html>
