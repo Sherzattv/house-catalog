@@ -70,6 +70,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-f
 .card:hover{transform:translateY(-4px);border-color:var(--line-hi);box-shadow:var(--shadow)}
 .media{position:relative;height:200px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .media img{width:100%;height:100%;object-fit:contain;transition:transform .4s ease}
+.media img.cover3d{object-fit:cover}
 .card:hover .media img{transform:scale(1.045)}
 .open-hint{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;opacity:0;transition:.18s;background:linear-gradient(to top,rgba(0,0,0,.4),rgba(0,0,0,0) 42%)}
 .card:hover .open-hint{opacity:1}
@@ -112,6 +113,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-f
 .lb-type{font-size:11px;font-weight:600;padding:3px 9px;border-radius:7px;border:1px solid var(--line-hi);color:var(--mut)}
 .lb-type.facade{color:#9ad0ff;border-color:rgba(154,208,255,.4)}
 .lb-type.plan{color:#ffcf8f;border-color:rgba(255,207,143,.4)}
+.lb-type.view3d{color:#9be6b0;border-color:rgba(155,230,176,.45)}
 .lb-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 .lb-btn{padding:8px 12px;border-radius:10px;border:1px solid var(--line);color:var(--mut);font-size:13px;display:flex;align-items:center;gap:7px;transition:.15s}
 .lb-btn:hover{color:var(--txt);background:rgba(255,255,255,.05);border-color:var(--line-hi)}
@@ -170,7 +172,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-f
     </div>
     <div class="stats">
       <span><b class="s-num" id="st-proj">63</b> проекта</span>
-      <span><b id="st-fac">71</b> фасад</span>
+      <span><b id="st-3d">0</b> с 3D</span>
       <span><b id="st-plan">82</b> планировки</span>
     </div>
   </div>
@@ -193,7 +195,9 @@ header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-f
         <button data-s="l">150+&nbsp;м²</button>
       </div>
       <div class="seg" id="f-view" role="group" aria-label="Что показывать на карточке">
-        <button data-v="facade" class="on">
+        <button data-v="3d" class="on">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>3D</button>
+        <button data-v="facade">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Фасад</button>
         <button data-v="plan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 9v12M9 14h6"/></svg>План</button>
@@ -251,16 +255,22 @@ header{position:sticky;top:0;z-index:20;background:rgba(14,16,20,.82);backdrop-f
   <div class="lb-strip" id="lb-strip"></div>
 </div>
 
-<script src="catalog.data.js?v=4"></script>
+<script src="catalog.data.js?v=7"></script>
 <script>
 const DATA = (window.CATALOG || []);
 
 /* ---- helpers ---- */
-const pad   = n => String(n).padStart(3,'0');
-const thumb = pg => `02_pages/thumbs/p${pad(pg)}.png`;
-const full  = (pg,t) => `02_pages/p${pad(pg)}_${t}.png`;
-const storeys = p => p.p.length >= 2 ? 2 : 1;
-const imgsOf  = p => [...p.f.map(pg=>({pg,type:'facade'})), ...p.p.map(pg=>({pg,type:'plan'}))];
+const dir    = p => `projects/${p.label}`;
+const thumb  = it => `${dir(it.proj)}/thumbs/${it.name}`;
+const full   = it => `${dir(it.proj)}/${it.name}`;
+const storeys = p => p.floors || ((p.plan||[]).length >= 2 ? 2 : 1);
+function imgsOf(p){
+  const out=[];
+  (p.r3d   ||[]).forEach(n=>out.push({proj:p,type:'3d',    name:n}));
+  (p.facade||[]).forEach(n=>out.push({proj:p,type:'facade',name:n}));
+  (p.plan  ||[]).forEach(n=>out.push({proj:p,type:'plan',  name:n}));
+  return out;
+}
 const byId = id => DATA.find(p=>p.id===id);
 function pl(n,a,b,c){const x=n%10,y=n%100;if(x===1&&y!==11)return a;if(x>=2&&x<=4&&(y<10||y>=20))return b;return c;}
 const dimsOf = p => (p.w!=null && p.d!=null) ? `${p.w} × ${p.d} м` : '';
@@ -275,7 +285,7 @@ const ICON = {
 };
 
 /* ---- state ---- */
-let view='facade', storyFilter='all', sizeFilter='all', favOnly=false, query='';
+let view='3d', storyFilter='all', sizeFilter='all', favOnly=false, query='';
 const favs = new Set(JSON.parse(localStorage.getItem('bps_favs')||'[]'));
 const saveFavs = () => localStorage.setItem('bps_favs', JSON.stringify([...favs]));
 
@@ -305,9 +315,11 @@ function filtered(){
   });
 }
 function heroOf(p){
-  if(view==='plan'   && p.p.length) return {pg:p.p[0],type:'plan'};
-  if(view==='facade' && p.f.length) return {pg:p.f[0],type:'facade'};
-  return imgsOf(p)[0];
+  const all=imgsOf(p);
+  if(view==='3d'){const x=all.find(i=>i.type==='3d'); if(x) return x;}
+  if(view==='plan'){const x=all.find(i=>i.type==='plan'); if(x) return x;}
+  if(view==='facade'){const x=all.find(i=>i.type==='facade'); if(x) return x;}
+  return all.find(i=>i.type==='facade') || all[0];
 }
 
 /* ---- render grid ---- */
@@ -327,16 +339,16 @@ function render(){
   updateFiltBadge();
 }
 function card(p,idx){
-  const hero=heroOf(p), st=storeys(p), nF=p.f.length, nP=p.p.length;
+  const hero=heroOf(p), st=storeys(p), nF=(p.facade||[]).length, nP=(p.plan||[]).length, n3=(p.r3d||[]).length;
   const el=document.createElement('article');
   el.className='card';
   el.style.animationDelay=Math.min(idx,14)*16+'ms';
   el.innerHTML=`
     <div class="media">
-      <img loading="lazy" src="${thumb(hero.pg)}" alt="Проект ${p.label}">
+      <img loading="lazy" class="${hero.type==='3d'?'cover3d':''}" src="${thumb(hero)}" alt="Проект ${p.label}">
       <div class="badges">
         <span class="badge story">${st===2?'2 этажа':'1 этаж'}</span>
-        ${nF>1?`<span class="badge">${nF} вида</span>`:''}
+        ${n3 && hero.type!=='3d'?`<span class="badge story">3D</span>`:''}
       </div>
       <button class="fav ${favs.has(p.id)?'on':''}" data-id="${p.id}" aria-label="В избранное">${ICON.heart}</button>
       <div class="open-hint"><span>${ICON.eye} Открыть</span></div>
@@ -350,12 +362,13 @@ function card(p,idx){
         ${dimsOf(p)?`<span class="tag">${ICON.area} ${dimsOf(p)}</span>`:''}
         <span class="tag">${ICON.home} ${nF} ${pl(nF,'фасад','фасада','фасадов')}</span>
         <span class="tag">${ICON.plan} ${nP} ${pl(nP,'план','плана','планов')}</span>
+        ${n3?`<span class="tag">${ICON.eye} 3D</span>`:''}
       </div>
     </div>`;
   el.addEventListener('click',e=>{
     if(e.target.closest('.fav')) return;
     const all=imgsOf(p);
-    const start=all.findIndex(x=>x.pg===hero.pg && x.type===hero.type);
+    const start=all.findIndex(x=>x.name===hero.name && x.type===hero.type);
     openLB(p.id, start<0?0:start);
   });
   el.querySelector('.fav').addEventListener('click',e=>{e.stopPropagation();toggleFav(p.id);});
@@ -391,15 +404,16 @@ function openLB(id,idx){
 function showLB(){
   zoomed=false; lbImg.classList.remove('zoom'); lbImg.style.transform='';
   const it=lbList[lbIdx];
-  lbImg.src=full(it.pg,it.type);
+  lbImg.src=full(it);
   $('lb-num').textContent=lbProj.label;
   const meta=[];
   if(lbProj.a!=null) meta.push(lbProj.a+' м²');
   if(dimsOf(lbProj)) meta.push(dimsOf(lbProj));
-  meta.push('стр. '+it.pg, `${lbIdx+1}/${lbList.length}`);
+  if(lbProj.pages) meta.push('стр. '+lbProj.pages);
+  meta.push(`${lbIdx+1}/${lbList.length}`);
   $('lb-meta').textContent=meta.join(' · ');
-  const ty=$('lb-type'); ty.textContent=it.type==='facade'?'Фасад':'Планировка'; ty.className='lb-type '+it.type;
-  $('lb-orig').href=full(it.pg,it.type);
+  const ty=$('lb-type'); ty.textContent=it.type==='facade'?'Фасад':it.type==='plan'?'Планировка':'3D-вид'; ty.className='lb-type '+(it.type==='3d'?'view3d':it.type);
+  $('lb-orig').href=full(it);
   $('lb-fav').classList.toggle('on',favs.has(lbProj.id));
   [...$('lb-strip').children].forEach((c,i)=>c.classList.toggle('on',i===lbIdx));
   const list=filtered(), pos=list.findIndex(p=>p.id===lbProj.id);
@@ -413,7 +427,7 @@ function buildStrip(){
   lbList.forEach((it,i)=>{
     const b=document.createElement('button');
     b.className='lb-thumb'+(i===lbIdx?' on':'');
-    b.innerHTML=`<img src="${thumb(it.pg)}" alt=""><span class="lab">${it.type==='facade'?'фасад':'план'}</span>`;
+    b.innerHTML=`<img src="${thumb(it)}" alt=""><span class="lab">${it.type==='facade'?'фасад':it.type==='plan'?'план':'3D'}</span>`;
     b.addEventListener('click',()=>{lbIdx=i;showLB();});
     s.appendChild(b);
   });
@@ -496,8 +510,8 @@ document.addEventListener('keydown',e=>{
 
 /* ---- init ---- */
 $('st-proj').textContent=DATA.length;
-$('st-fac').textContent=DATA.reduce((s,p)=>s+p.f.length,0);
-$('st-plan').textContent=DATA.reduce((s,p)=>s+p.p.length,0);
+$('st-3d').textContent=DATA.filter(p=>(p.r3d||[]).length).length;
+$('st-plan').textContent=DATA.reduce((s,p)=>s+(p.plan||[]).length,0);
 updateFavCount();
 render();
 </script>
